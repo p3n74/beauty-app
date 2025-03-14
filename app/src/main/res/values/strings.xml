@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">BeautyApp</string>
+    <string-array name="sort_options">
+        <item>Price: Low to High</item>
+        <item>Price: High to Low</item>
+        <item>Rating: High to Low</item>
+    </string-array>
+    <string-array name="filter_options">
+        <item>All</item>
+        <item>Normal</item>
+        <item>Dry</item>
+        <item>Oily</item>
+        <item>Combination</item>
+        <item>Sensitive</item>
+    </string-array>
+    <string-array name="category_options">
+        <item>All</item>
+        <item>Ranked</item>
+        <item>Hot</item>
+        <item>Loved</item>
+        <item>Secret</item>
+    </string-array>
+</resources>
