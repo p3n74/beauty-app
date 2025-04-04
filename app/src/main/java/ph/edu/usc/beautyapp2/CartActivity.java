@@ -1,6 +1,8 @@
 package ph.edu.usc.beautyapp2;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -11,6 +13,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +27,7 @@ public class CartActivity extends AppCompatActivity {
     private TextView totalText;
     private Button checkoutButton;
 
+    @SuppressLint("WrongViewCast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,10 +68,24 @@ public class CartActivity extends AppCompatActivity {
 
         updateTotal();
 
+        // Save cart to JSON file
+        saveCartToJSON();
+
         checkoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                saveCartToJSON();
                 showCheckoutDialog();
+            }
+        });
+
+        ImageView menu_icon = findViewById(R.id.menu_icon);
+
+        menu_icon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CartActivity.this, XMLDisplayActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -76,7 +96,29 @@ public class CartActivity extends AppCompatActivity {
             total += product.getPrice();
         }
         totalText.setText("Total: $" + String.format("%.2f", total));
+    }
 
+    public void saveCartToJSON() {
+        try {
+            JSONArray jsonArray = new JSONArray();
+            for (Product product : cartItems) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("name", product.getName());
+                jsonObject.put("price", product.getPrice());
+                jsonArray.put(jsonObject);
+            }
+
+            String jsonString = jsonArray.toString();
+            FileOutputStream fos = openFileOutput("cart.json", MODE_PRIVATE);
+            fos.write(jsonString.getBytes());
+            fos.close();
+
+            Toast.makeText(this, "Cart saved to JSON", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error saving cart to JSON", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showCheckoutDialog() {

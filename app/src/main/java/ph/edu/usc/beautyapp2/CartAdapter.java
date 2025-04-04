@@ -45,6 +45,9 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
 
             // Update total
             cartActivity.updateTotal();
+
+            // Save updated cart to JSON
+            cartActivity.saveCartToJSON();
         });
     }
 

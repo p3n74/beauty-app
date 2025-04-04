@@ -1,0 +1,48 @@
+[
+
+  {
+    "name": "Popular Product 1",
+    "description": "Description 6",
+    "price": 39.99,
+    "rating": 4.8,
+    "skinType": "Oily",
+    "imageResId": "ic_product6",
+    "category": "Hot"
+  },
+  {
+    "name": "Popular Product 2",
+    "description": "Description 7",
+    "price": 24.99,
+    "rating": 4.2,
+    "skinType": "Combination",
+    "imageResId": "ic_product7",
+    "category": "Loved"
+  },
+  {
+    "name": "Popular Product 3",
+    "description": "Description 8",
+    "price": 31.99,
+    "rating": 4.9,
+    "skinType": "Normal",
+    "imageResId": "ic_product8",
+    "category": "Secret"
+  },
+  {
+    "name": "Popular Product 4",
+    "description": "Description 9",
+    "price": 26.99,
+    "rating": 4.1,
+    "skinType": "Dry",
+    "imageResId": "ic_product9",
+    "category": "Ranked"
+  },
+  {
+    "name": "Popular Product 5",
+    "description": "Description 10",
+    "price": 29.49,
+    "rating": 4.4,
+    "skinType": "Sensitive",
+    "imageResId": "ic_product10",
+    "category": "Hot"
+  }
+]

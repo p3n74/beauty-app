@@ -7,9 +7,18 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -26,37 +35,23 @@ public class MainActivity extends AppCompatActivity {
     private List<Product> popularProducts;
     private List<Product> allFeaturedProducts;
     private List<Product> allPopularProducts;
-
-
+    private List<Product> allProducts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        // Navbar
-
-
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         ImageView profileIcon = findViewById(R.id.profile_icon);
-
-        profileIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, UserProfileActivity.class);
-                startActivity(intent);
-            }
+        profileIcon.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, UserProfileActivity.class);
+            startActivity(intent);
         });
 
         ImageView cart_icon = findViewById(R.id.cart_icon);
-
-        cart_icon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, CartActivity.class);
-                startActivity(intent);
-            }
+        cart_icon.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, CartActivity.class);
+            startActivity(intent);
         });
 
         featuredRecyclerView = findViewById(R.id.featured_products_list);
@@ -68,24 +63,27 @@ public class MainActivity extends AppCompatActivity {
         Spinner categorySpinnerPopular = findViewById(R.id.category_spinner_popular);
         Spinner categorySpinnerFeatured = findViewById(R.id.category_spinner_featured);
 
-        // Sample data for featured products
+        featuredProducts = new ArrayList<>();
+        popularProducts = new ArrayList<>();
         allFeaturedProducts = new ArrayList<>();
-        allFeaturedProducts.add(new Product("Featured Product 1", "Description 1", 29.99, 4.5, "Normal", R.drawable.ic_product1, "Ranked"));
-        allFeaturedProducts.add(new Product("Featured Product 2", "Description 2", 19.99, 4.0, "Dry", R.drawable.ic_product2, "Hot"));
-        allFeaturedProducts.add(new Product("Featured Product 3", "Description 3", 34.99, 4.7, "Oily", R.drawable.ic_product3, "Loved"));
-        allFeaturedProducts.add(new Product("Featured Product 4", "Description 4", 22.99, 4.3, "Combination", R.drawable.ic_product4, "Secret"));
-        allFeaturedProducts.add(new Product("Featured Product 5", "Description 5", 27.99, 4.6, "Sensitive", R.drawable.ic_product5, "Ranked"));
-
-        // Sample data for popular products
         allPopularProducts = new ArrayList<>();
-        allPopularProducts.add(new Product("Popular Product 1", "Description 6", 39.99, 4.8, "Oily", R.drawable.ic_product6, "Hot"));
-        allPopularProducts.add(new Product("Popular Product 2", "Description 7", 24.99, 4.2, "Combination", R.drawable.ic_product7, "Loved"));
-        allPopularProducts.add(new Product("Popular Product 3", "Description 8", 31.99, 4.9, "Normal", R.drawable.ic_product8, "Secret"));
-        allPopularProducts.add(new Product("Popular Product 4", "Description 9", 26.99, 4.1, "Dry", R.drawable.ic_product9, "Ranked"));
-        allPopularProducts.add(new Product("Popular Product 5", "Description 10", 29.49, 4.4, "Sensitive", R.drawable.ic_product10, "Hot"));
 
-        featuredProducts = new ArrayList<>(allFeaturedProducts);
-        popularProducts = new ArrayList<>(allPopularProducts);
+        // Save sample data to JSON (only needed once, comment out after first run)
+        // saveSampleDataToJSON();
+
+        // Load data from JSON
+        loadDataFromJSON();
+
+        // Combine all products
+        allProducts = new ArrayList<>();
+        allProducts.addAll(allFeaturedProducts);
+        allProducts.addAll(allPopularProducts);
+
+        // Set all products in CartManager
+        CartManager.getInstance().setAllProducts(allProducts);
+
+        // Load the cart from JSON
+        CartManager.getInstance().loadCart(this);
 
         featuredAdapter = new ProductAdapter(featuredProducts, this, this::onProductClick);
         popularAdapter = new ProductAdapter(popularProducts, this, this::onProductClick);
@@ -224,6 +222,125 @@ public class MainActivity extends AppCompatActivity {
                 // Do nothing
             }
         });
+    }
+
+    private void saveSampleDataToJSON() {
+        try {
+            JSONArray jsonArray = new JSONArray();
+
+            // Add featured products
+            for (Product product : allFeaturedProducts) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("name", product.getName());
+                jsonObject.put("description", product.getDescription());
+                jsonObject.put("price", product.getPrice());
+                jsonObject.put("rating", product.getRating());
+                jsonObject.put("skinType", product.getSkinType());
+                jsonObject.put("imageResId", product.getImageResId());
+                jsonObject.put("category", product.getCategory());
+                jsonArray.put(jsonObject);
+            }
+
+            // Add popular products
+            for (Product product : allPopularProducts) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("name", product.getName());
+                jsonObject.put("description", product.getDescription());
+                jsonObject.put("price", product.getPrice());
+                jsonObject.put("rating", product.getRating());
+                jsonObject.put("skinType", product.getSkinType());
+                jsonObject.put("imageResId", product.getImageResId());
+                jsonObject.put("category", product.getCategory());
+                jsonArray.put(jsonObject);
+            }
+
+            String jsonString = jsonArray.toString();
+            FileOutputStream fos = openFileOutput("products.json", MODE_PRIVATE);
+            fos.write(jsonString.getBytes());
+            fos.close();
+
+            Toast.makeText(this, "Sample data saved to JSON", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error saving sample data to JSON", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void loadDataFromJSON() {
+
+        // featured products
+
+        try {
+            InputStream is = getResources().openRawResource(R.raw.featprod);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            StringBuilder jsonString = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                jsonString.append(line);
+            }
+            reader.close();
+
+            JSONArray jsonArray = new JSONArray(jsonString.toString());
+            allFeaturedProducts.clear();
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String name = jsonObject.getString("name");
+                String description = jsonObject.getString("description");
+                double price = jsonObject.getDouble("price");
+                double rating = jsonObject.getDouble("rating");
+                String skinType = jsonObject.getString("skinType");
+                int imageResId = getResources().getIdentifier(jsonObject.getString("imageResId"), "drawable", getPackageName());
+                String category = jsonObject.getString("category");
+
+                Product product = new Product(name, description, price, rating, skinType, imageResId, category);
+
+                allFeaturedProducts.add(product);
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error loading data from JSON", Toast.LENGTH_SHORT).show();
+        }
+
+        // popular products
+
+        try {
+            InputStream is = getResources().openRawResource(R.raw.popprod);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            StringBuilder jsonString = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                jsonString.append(line);
+            }
+            reader.close();
+
+            JSONArray jsonArray = new JSONArray(jsonString.toString());
+            allPopularProducts.clear();
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String name = jsonObject.getString("name");
+                String description = jsonObject.getString("description");
+                double price = jsonObject.getDouble("price");
+                double rating = jsonObject.getDouble("rating");
+                String skinType = jsonObject.getString("skinType");
+                int imageResId = getResources().getIdentifier(jsonObject.getString("imageResId"), "drawable", getPackageName());
+                String category = jsonObject.getString("category");
+
+                Product product = new Product(name, description, price, rating, skinType, imageResId, category);
+
+                allPopularProducts.add(product);
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error loading data from JSON", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     private void filterPopularProducts(String filter) {

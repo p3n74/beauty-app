@@ -1,0 +1,60 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F5F5"
+    android:padding="16dp">
+
+    <!-- Header Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:orientation="vertical"
+        android:background="#FFA726"
+        android:paddingTop="18dp"
+        android:gravity="center">
+
+        <!-- Logo -->
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_logo" />
+    </LinearLayout>
+
+    <!-- Login Form -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center">
+
+        <EditText
+            android:id="@+id/username_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter Username"
+            android:inputType="text"
+            android:padding="12dp"
+            />
+        <EditText
+            android:id="@+id/Pasword_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter Password"
+            android:inputType="text"
+            android:padding="12dp"
+            />
+
+        <Button
+            android:id="@+id/login_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Login"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#FFA726"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
+</LinearLayout>
